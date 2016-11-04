@@ -97,8 +97,12 @@ diamonds <- function(matrix.points, mid.points, temp.matrix) {
       first.replacement <- mean(first.numbers)
       second.replacement <- mean(second.numbers)
       cat("first replacement:",first.replacement, "\n")
-      my.world[a, b] <- first.replacement
-      my.world[b, a] <- second.replacement
+      if (is.na(my.world[a, b])){
+        my.world[a, b] <- first.replacement
+      }
+      if (is.na(my.world[b, a])){
+        my.world[b, a] <- second.replacement
+      }
     } 
   }
 matrix.points <- temp.matrix
@@ -112,3 +116,4 @@ print(matrix.points)
 my.world <- outofdiamonds$my.world
 print(my.world)
 
+## Now, just loop throgh until matrix is full!
