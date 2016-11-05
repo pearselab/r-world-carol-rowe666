@@ -1,5 +1,5 @@
 # Create an empty matrix of appropriate size:
-# Make sure your world.size is SQUARE AND must be (x^2) + 1 to work!
+# Make sure your world.size is SQUARE AND must be (2^x) + 1 to work!
 world.size <- function(x){
   size <- (2^x) + 1
   my.world <- matrix(data = NA, nrow = size, ncol = size)
@@ -23,37 +23,45 @@ my.world[size,1] <- rnorm(1, 20, 200)
 # Will add to this vector with additonal locations for boxes within boxes
 matrix.points <- c(1, size)
 print(matrix.points)
+#print(my.world)
 #This get the middle value from avg. fo 4 corners (shouldn't this be called th square step then?)
 # Contrary to class notes, I am calling this my BOXES function since I use the 4 corners of a box
-boxes <- function(matrix.points) {
+get.midpoints <- function(matrix.points){
   mid.points <- c()
   for (i in 1:(length(matrix.points)-1)){
-    a <- matrix.points[i]
-    b <- matrix.points[i+1]
-    ul <- my.world[a, a]
-    ur <- my.world[a, b]
-    ll <- my.world[b, a]
-    lr <- my.world[b, b]
-    avg <- (ul + ll + ur + lr)/4
     midpoint <- (matrix.points[i] + matrix.points[i+1])/2
-    my.world[midpoint, midpoint] <- avg
     mid.points <- c(mid.points, midpoint)
   }
-  #mat.points <- c(mat.points, my.midpoints)
-  #mat.points <- sort(mat.points, decreasing = FALSE)
-  pointsandmatrix <- list(mid.points = mid.points, my.world = my.world)
-  return(pointsandmatrix)
+  return(mid.points)
 }
 
-## Is this really how one gets the return values from a function????
-outofboxes <- boxes(matrix.points)
-mid.points <- outofboxes$mid.points
-my.world <- outofboxes$my.world
-#print(my.world)
-#cat("matrix points:", matrix.points, "\n")
-#cat("mid points:", mid.points, "\n")
-temp.matrix <- sort(c(matrix.points, mid.points), decreasing = FALSE)
-#cat(temp.matrix)
+
+boxes <- function(temp.matrix, matrix.points) {
+  for (i in 1:(length(mid.points))){
+    for(j in 1:length(mid.points)){
+      x <- mid.points[i]
+      y <- mid.points[j]
+      cat("x is:", x, "\n")
+      cat("y is:", y, "\n")
+      xx <- which(temp.matrix %in% x)
+      xxplus <- temp.matrix[xx+1]
+      xxminus <- temp.matrix[xx-1]
+      yy <- which(temp.matrix %in% y)
+      yyplus <- temp.matrix[yy+1]
+      yyminus <- temp.matrix[yy-1]
+      corner1 <- my.world[xxminus, yyminus]
+      corner2 <- my.world[xxplus, yyminus]
+      corner3 <- my.world[xxminus, yyplus]
+      corner4 <- my.world[xxplus, yyplus]
+      avg <- (corner1 + corner2 + corner3 + corner4)/4
+      my.world[x,y] <- avg
+      #if x >= y # no, but need to get the reverse orders on these!
+      #my.world[y,x] <- avg
+    }
+  }
+  return(my.world)
+}
+
 
 ### And now, the diamonds. Need a recursive function off the box function above???
 diamonds <- function(matrix.points, mid.points, temp.matrix) {
@@ -64,7 +72,7 @@ diamonds <- function(matrix.points, mid.points, temp.matrix) {
       aa <- which(temp.matrix %in% a)
       aaplus <- temp.matrix[aa+1]
       aaminus <- temp.matrix[aa-1]
-      cat("aaplus is:", aaplus, "\n")
+      #cat("aaplus is:", aaplus, "\n")
       bb <- which(temp.matrix %in% b)
       bbplus <- temp.matrix[bb+1]
       bbminus <- temp.matrix[bb-1]
@@ -96,7 +104,7 @@ diamonds <- function(matrix.points, mid.points, temp.matrix) {
       }
       first.replacement <- mean(first.numbers)
       second.replacement <- mean(second.numbers)
-      cat("first replacement:",first.replacement, "\n")
+      #cat("first replacement:",first.replacement, "\n")
       if (is.na(my.world[a, b])){
         my.world[a, b] <- first.replacement
       }
@@ -110,10 +118,22 @@ diamonds.out <- list(matrix.points = matrix.points, my.world = my.world)
 return(diamonds.out)
 }
 
-outofdiamonds <- diamonds(matrix.points, mid.points, temp.matrix)
-matrix.points <- outofdiamonds$matrix.points
-print(matrix.points)
-my.world <- outofdiamonds$my.world
+
+#outofboxes <- boxes(matrix.points, my.world)
+rounds <- 1
+difference <- (matrix.points[2] - 1)
+while (difference > 1){
+  mid.points <- get.midpoints(matrix.points)
+  cat("midpoints are:", mid.points, "\n")
+  temp.matrix <- sort(c(matrix.points, mid.points), decreasing = FALSE)
+  my.world <- boxes(temp.matrix)
+  outofdiamonds <- diamonds(matrix.points, mid.points, temp.matrix)
+  matrix.points <- outofdiamonds$matrix.points
+  my.world <- outofdiamonds$my.world
+  difference <- (matrix.points[2] - 1)
+  rounds <- rounds + 1
+}
+
 print(my.world)
 
-## Now, just loop throgh until matrix is full!
+
