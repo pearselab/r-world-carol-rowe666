@@ -31,8 +31,8 @@ world.size <- function(x){
 
 # Get variation around means. Enter how big you want initial deviation.
 # function makes a vector from deviation to zero for the number of iterations needed: (size+1)
-stdev <- function(deviation, size){
-  stdev <- seq(deviation,0, length.out = size+1)
+stdev <- function(deviation, x){
+  stdev <- seq(deviation,0, length.out = x+1)
   return(stdev)
 }
 
@@ -74,7 +74,10 @@ boxes <- function(temp.matrix, matrix.points, deviant) {
       corner4 <- my.world[xxplus, yyplus]
       # now average the corners and put that value into the center cell
       avg <- (corner1 + corner2 + corner3 + corner4)/4
+      cat("average is:", avg, "\n")
       avg <- avg + deviant
+      cat("deviant is:", deviant, "\n")
+      cat("new average is:", avg, "\n")
       my.world[x,y] <- avg
     }
   }
@@ -140,36 +143,52 @@ diamonds.out <- list(matrix.points = matrix.points, my.world = my.world)
 return(diamonds.out)
 }
 
-#make.terrain <- function(n=6, lakes=TRUE, rivers=5, deviation = 100){
-  deviation <- 100
-  worldly <- world.size(6)
-  size <- worldly$size
-  my.world <- worldly$my.world
+waterlogged <- function(lakes){
+  if(lakes){
+    my.world[my.world<0]= "NA"
+    print("you have lakes")
+  }else {
+    print("No lakes")
+  }
+  return(my.world)
+}
+
+### User needs to add values for: lakes, deviation, x for size of matrix, and stdev
+lakes <- TRUE
+deviation <- 500
+x <- 3
+print(matrix.points)
+stdev <- stdev(0, 3)
+worldly <- world.size(x)
+size <- worldly$size
+matrix.points <- c(1, size)
+my.world <- worldly$my.world
 
 ### Add values to the four corners of the intitial box  
-  my.world[1,1] <- rnorm(1, 500, deviation)
-  my.world[1,size] <- rnorm(1, 500, deviation)
-  my.world[size, size] <- rnorm(1, 500, deviation)
-  my.world[size,1] <- rnorm(1, 500, deviation)
+my.world[1,1] <- rnorm(1, 10, 400)
+my.world[1,size] <- rnorm(1, 10, 400)
+my.world[size, size] <- rnorm(1, 10, 400)
+my.world[size,1] <- rnorm(1, 10, 400)
 
 ## Initialize a vector with numbers corresponding to box size.
 # Will add to this vector with additonal locations for boxes within boxes
-  matrix.points <- c(1, size)
-  print(matrix.points)
-  stdev <- stdev(deviation, size)
-  rounds <- 1
+
+rounds <- 1
+difference <- (matrix.points[2] - 1)
+while (difference > 1){
+  deviant <- stdev[rounds]
+  cat("deviant should be:", deviant, "\n")
+  mid.points <- get.midpoints(matrix.points)
+  temp.matrix <- sort(c(matrix.points, mid.points), decreasing = FALSE)
+  my.world <- boxes(temp.matrix, matrix.points, deviant)
+  outofdiamonds <- diamonds(matrix.points, mid.points, temp.matrix, deviant)
+  matrix.points <- outofdiamonds$matrix.points
+  my.world <- outofdiamonds$my.world
   difference <- (matrix.points[2] - 1)
-  while (difference > 1){
-    deviant <- stdev[rounds]
-    mid.points <- get.midpoints(matrix.points)
-    temp.matrix <- sort(c(matrix.points, mid.points), decreasing = FALSE)
-    my.world <- boxes(temp.matrix, matrix.points, deviant)
-    outofdiamonds <- diamonds(matrix.points, mid.points, temp.matrix, deviant)
-    matrix.points <- outofdiamonds$matrix.points
-    my.world <- outofdiamonds$my.world
-    difference <- (matrix.points[2] - 1)
-    rounds <- rounds + 1
-  }
+  rounds <- rounds + 1
+}
 
 print(my.world)
-
+print(stdev)
+my.world <- waterlogged(lakes)
+print(my.world)
