@@ -1,23 +1,7 @@
 #’ Make an elevational grid with optional lakes and rivers
 #’
-#’ A light wrapper around \code{diamond.square} and \code{add.rivers}
-#’ @param n Size of grid will be a 2^n +1 grid (default: 6; a 64 x 64
-#’ grid)
-#’ @param lakes logical whether to make all terrain lower than 0
-#’ height underwater (default: TRUE)
-#’ @param rivers number of rivers to add to terrain (default: 5)
-#’ @param noise range for random noise to be added at each step of
-#’ diamond.square algorithm; vector of length two, first
-#’ element is the first standard deviation (used to draw the seeds
-#’ for the corners of the grid) and the second is the last
-#’ standard deviation for noise at the finest spatial
-#’ scale. Standard deviations are evenly spread out across all
-#’ depths of the diamond.square algorithm.
-#’ @return a terrain matrix; numeric elements indicate heights, and
-#’ NAs indicate cells filled with water
-#’ @examples
-#’ huge.terrain <- make.terrain(8, rivers=20)
-#’ image(huge.terrain)
+#’ User needs to add values for: lakes, deviation, x for formulating size of matrix, and initial deviation for first four points in matrix
+
 
 
 # Create an empty matrix of appropriate size:
@@ -74,10 +58,7 @@ boxes <- function(temp.matrix, matrix.points, deviant) {
       corner4 <- my.world[xxplus, yyplus]
       # now average the corners and put that value into the center cell
       avg <- (corner1 + corner2 + corner3 + corner4)/4
-      cat("average is:", avg, "\n")
       avg <- avg + deviant
-      cat("deviant is:", deviant, "\n")
-      cat("new average is:", avg, "\n")
       my.world[x,y] <- avg
     }
   }
@@ -129,7 +110,6 @@ diamonds <- function(matrix.points, mid.points, temp.matrix, deviant) {
       }
       first.replacement <- mean(first.numbers) + deviant
       second.replacement <- mean(second.numbers) + deviant
-      #cat("first replacement:",first.replacement, "\n")
       if (is.na(my.world[a, b])){
         my.world[a, b] <- first.replacement
       }
@@ -153,22 +133,23 @@ waterlogged <- function(lakes){
   return(my.world)
 }
 
-### User needs to add values for: lakes, deviation, x for size of matrix, and stdev
+### User needs to add values for: lakes, deviation, x for formulating size of matrix, and initial deviation for first four points in matrix
 lakes <- TRUE
-deviation <- 500
+deviation <- 50
 x <- 3
+initdeviation <- 100
 print(matrix.points)
-stdev <- stdev(0, 3)
+stdev <- stdev(deviation, x+1)
 worldly <- world.size(x)
 size <- worldly$size
 matrix.points <- c(1, size)
 my.world <- worldly$my.world
 
 ### Add values to the four corners of the intitial box  
-my.world[1,1] <- rnorm(1, 10, 400)
-my.world[1,size] <- rnorm(1, 10, 400)
-my.world[size, size] <- rnorm(1, 10, 400)
-my.world[size,1] <- rnorm(1, 10, 400)
+my.world[1,1] <- rnorm(1, 10, initdeviation)
+my.world[1,size] <- rnorm(1, 10, initdeviation)
+my.world[size, size] <- rnorm(1, 10, initdeviation)
+my.world[size,1] <- rnorm(1, 10, initdeviation)
 
 ## Initialize a vector with numbers corresponding to box size.
 # Will add to this vector with additonal locations for boxes within boxes
