@@ -32,8 +32,15 @@ comps <- runif(n=length(repro), min=0, max=1)
 comps <- runif(n=length(repro)^2, min = 0, max = 1)
 comp.mat <- matrix(comps, nrow = length(repro), ncol = length(repro))
 names <- list('Betula', 'Popoulus', 'Pteridium', 'Pseudostuga')
+
+# Not sure if I'm supposed to reassign.
 info <- setup.plants(repro, survive, comp.mat, names)
-info
+names <- info$names
+repro <- info$repro
+survive <- info$survive
+comp.mat <- info$comp.mat
+
+
 cat("testing to see what's going on:", survive, "\n")
 
 #Tested this function by substituting "Betula" for plants. It works.
@@ -41,20 +48,36 @@ survive <- function(cell, info){
   if(cell == "NA" | cell == ''){
     return(cell)
   }
-  if(runif(1) <= info$survive[plants]){
+  names <- "Betula"
+  if(runif(1) <= info$survive[names]){
     # [[plant]] if you want just the numeric value without the name
-    cell <- info$survive[plants]
+    cell <- info$survive[names]
+    cat("my cell is:", cell, "\n")
     return(cell)
   }
 }
 
-
-plant.timestep <- function(plants, terrain, info){
-  survive <- function(plant, info){
-    #...survive function...
+# terrain is matrix I have called my.world
+plant.timestep <- function(my.world, info){
+  new.plants.matrix <- matrix(data = NA, nrow= nrow(my.world), ncol=ncol(my.world))
+  for(i in 1:nrow(my.world)){
+    for(j in 1:ncol(my.world)){
+      newplant <- survive(my.world[i,j], info)
+      cat("newplant is:", newplant, "\n")
+      new.plants.matrix[i,j] <- newplant
+    }
   }
-  #...looping et al...
   return(new.plants.matrix)
-} 
+}
 
+## creating a dummy matrix for my.world
+data <- rnorm(10, 1, 20)
+my.world <- matrix(data =data, nrow = 5, ncol = 5)
+my.world
+new.plants.matrix <- plant.timestep(my.world, info)
+new.plants.matrix
 
+# plants <- array("", dim=c(dim(terrain),timesteps+1))
+# #...why timesteps+1, do you think?...
+# for(i in seq_len(dim(plants)[3]))
+#   plants[,,i][is.na(terrain)] <- NA
