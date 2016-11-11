@@ -120,10 +120,42 @@ plant.timestep <- function(my.world, info){
 # new.plants.matrix
 
 
+############## JUST PLAYING WITH ARRAYS - THIS WILL GET TOSSED ##################
+########## now I have to see what arrays are about and what Will is doing in the plant array skeleton he provided:
+# Create two vectors.
+vector1 <- c(1,2,3,4,4,6,7,8,9)
+vector2 <- c(11,12,13,14,15,16,17,18,19)
+
+# Take these vectors as input to the array and see result
+result <- array(c(vector1,vector2),dim = c(3,3,2))
+print(result)
+
+for(i in seq_len(dim(result)[3])){
+  print(i) # there are just 2 layers in this array (ie. one matrix on top of another)
+  print(dim(result)) # each layer has dimensions of 3, 3, 2
+  print(dim(result)[1]) # good, 4 gives an error. dim(result)[1] is number rows, dim(result)[2] is number columns, dim(result)[1] is number layers.
+}
+
+########## END OF PLAYING WITH ARRAYS ###################################
+
+# And now, Will's plants array:
+# layer1 is the terrain matrix (my.world). Yes? No?
+# layer2 will be a matrix of plants (first round with random generation based upon user input of number of each plant). Yes? No?
+# layer3 and onward will be the new.plants.matrices of plants that we generate through each plant.timestep. 
+# Hence, plant.timestep is going to have to have a lot more additions to it!!!!!
+
+## Is this plants array for just getting the initial plant layer? Or is this to be used repeatedly??
+## Well, self, plants is called in the for loop in Will's skeleton. Thus, let's initialize plants array prior to the for loop. 
+## Why does Will have 3, where I added layer?
+
 ######## PLANTS ARRAY #############
-plants <- array("", dim=c(dim(terrain),timesteps+1))
-#...why timesteps+1, do you think?... Because you are entering info into the next timestep!
-for(i in seq_len(dim(plants)[3]))
-  plants[,,i][is.na(terrain)] <- NA
+# layer will be the iteration of the array: plants[,,layer]
+plants <- array("", dim=c(dim(my.world),timesteps+1))
+# for loop is just for going through layers....
+for(i in seq_len(dim(plants)[layer]))
+  plants[,,i][is.na(my.world)] <- NA
 
 ###### END OF PLANTS ARRAY ##########
+
+
+
