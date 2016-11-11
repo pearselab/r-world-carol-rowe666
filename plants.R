@@ -133,7 +133,7 @@ print(result)
 for(i in seq_len(dim(result)[3])){
   print(i) # there are just 2 layers in this array (ie. one matrix on top of another)
   print(dim(result)) # each layer has dimensions of 3, 3, 2
-  print(dim(result)[1]) # good, 4 gives an error. dim(result)[1] is number rows, dim(result)[2] is number columns, dim(result)[1] is number layers.
+  print(dim(result)[1]) # good, 4 gives an error. dim(result)[1] is number rows, dim(result)[2] is number columns, dim(result)[3] is number layers.
 }
 
 ########## END OF PLAYING WITH ARRAYS ###################################
