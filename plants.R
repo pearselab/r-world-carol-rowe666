@@ -1,6 +1,9 @@
 ## Anyone looking at this.....does my logic make sense???
 ## Have NOT worked on the plants array yet...that's where I left off.
 
+# Items needed from the terrain.R: my.world, size (which is numrows(my.world))
+# Items needed from user for plants.R: names, repro, survive, comp.mat, init.plant.amt
+
 ######## SETUP.PLANTS FUNCTION ################
 setup.plants <- function(repro, survive, comp.mat, names=NULL){
   if(is.null(names)){
@@ -90,18 +93,19 @@ return(cell)
 ## But where do we define x, which is the plant species that we are looking at???
 ## We call the survive function here, but no where do we define for which darned species!!
 
-
+# removing:for(i in 1:nrow(my.world)){ and for(j in 1:ncol(my.world)){
 #######  PLANT.TIMESTEP FUNCTION ############
 plant.timestep <- function(my.world, info){
   new.plants.matrix <- matrix(data = NA, nrow= nrow(my.world), ncol=ncol(my.world))
   # Now we go through every cell in my.world to deterimine if we can put a plant in that cell location
-  # of our new matrix: new.plants.matrix
-  for(i in 1:nrow(my.world)){
-    for(j in 1:ncol(my.world)){
-      newplant <- survive(my.world[i,j], info)
-      new.plants.matrix[i,j] <- newplant
+  # of our new matrix: new.plants.matrix. Where size <- nrow(my.world)
+  cell.locs <- as.matrix(expand.grid(1:size, 1:size))
+  for(i in 1:nrow(cell.locs)){
+    r <- cell.locs[i,1]
+    c <- cell.locs[i,2]
+    newplant <- survive(my.world[r,c], info)
+    new.plants.matrix[r,c] <- newplant
     }
-  }
   return(new.plants.matrix)
 }
 
@@ -133,7 +137,7 @@ print(result)
 for(i in seq_len(dim(result)[3])){
   print(i) # there are just 2 layers in this array (ie. one matrix on top of another)
   print(dim(result)) # each layer has dimensions of 3, 3, 2
-  print(dim(result)[1]) # good, 4 gives an error. dim(result)[1] is number rows, dim(result)[2] is number columns, dim(result)[3] is number layers.
+  print(dim(result)[1]) # good, 4 gives an error. dim(result)[1] is number rows, dim(result)[2] is number columns, dim(result)[3] is the layer number.
 }
 
 ########## END OF PLAYING WITH ARRAYS ###################################
@@ -149,6 +153,48 @@ for(i in seq_len(dim(result)[3])){
 ## Why does Will have 3, where I added layer?
 
 ######## PLANTS ARRAY #############
+# create your initial plant array based upon user input:
+# Given the species you gave me, I'm talking to you the user, give me the approx. proportions of each plant you want in the initial matrix (plants will be deducted given the presense of water in the terrain cell)
+
+######### temporary testing input ##########
+init.plant.amt <- c(0.3, 0.4, 0.2, 0.1)
+data <- rnorm(10, 1, 20)
+my.world <- matrix(data =data, nrow = 5, ncol = 5)
+######### end temporary testing input ###############
+
+init.plant.matrix <- function(init.plant.amt, my.world){
+  if(length(init.plant.amt) != length(names)){
+    stop("You have to enter a number for EACH species")
+  }
+  if(sum(init.plant.amt) != 1){
+    stop("Your starting portions must add up to 1")
+  }
+  size <- nrow(my.world)
+  numcells <- size^2
+  plantrow <- c(1:size)
+  plantcol <- c(1:size)
+  # create empty matrix of size == my.world
+  plant1.matrix <- matrix(data = NA, nrow = nrow(my.world), ncol = ncol(my.world))
+  # create a list of the plants for the number of cells in the matrix, with correspoinding probabilities
+  sp <- sample(names, numcells, prob = init.plant.amt, replace = TRUE)
+  # now fill the matrix. My logic is that the sp above is random, so I can enter that into the matrix systematically and still have a random matrix.
+  count <- 1
+    for(i in 1:size){
+      for(j in 1:size){
+        plant1.matrix[i,j] <- sp[[count]]
+        count <- count+1
+      }
+    }
+  return(plant1.matrix)
+}
+
+plant.matrix <- init.plant.matrix(init.plant.amt, my.world)
+plant.matrix
+
+##### Have to come back to this. Will, you didn't give enough info in notes for my brain to follow your logic.
+### I understand that I have to put each "generation" of plants into an array, but your skeleton below....
+#### it doesn't connect with me yet. I'll come back to this.
+
 # layer will be the iteration of the array: plants[,,layer]
 plants <- array("", dim=c(dim(my.world),timesteps+1))
 # for loop is just for going through layers....
@@ -157,5 +203,40 @@ for(i in seq_len(dim(plants)[layer]))
 
 ###### END OF PLANTS ARRAY ##########
 
+######## REPRODUCTION ######################
+##### like survive function.....but how/where/what...argh! I need to know when/how we are going to tell the functions for which bloody plant species?!?!?! Below, x refers to which plant species. Grrrrrr. Do we loop through each plant species? If so, then there's a bias for the plant that's first in order of looping.
+reproduce <- function(row, col, plants, info){
+  possible.locations <- as.matrix(expand.grid(row+c(-1,0,1), col+c(-1,0,1)))
+  for(i in 1:nrows(possible.locations)){
+    r <- possible.locations[i,1]
+    c <- possible.locations[i,2]
+    # make sure within matrix
+    if(r > 0 < size & c > 0 < size ){
+      if(my.matrix[r,c] == ''){
+        repro <- info$repro 
+        if(runif(1) <= repro[[x]]){ #just probability form the info$repro at location i
+          plant <- names(survive[x])
+          plants[r,c] <- plant
+        }else{
+          plants[r,c] <- ""
+        }
+        return()
+      } 
+      }
+    }
+    #...now filter out which ones are not water-logged and reproduce there...
+    #...being careful to check you do have somewhere to reproduce to!...
+    sample(species_names, 1, prob=comp.mat[row,column]) 
+  }
+  
+  return(plants)
+}
 
 
+#####  let's see how Will is reproducing....you know what I mean ########
+row <- 3
+col <- 2
+
+possible.locations <- as.matrix(expand.grid(row+c(-1,0,1), col+c(-1,0,1)))
+possible.locations
+#########  OK, I get it. Now, I figure how you probably created your terrain matrix. #######
