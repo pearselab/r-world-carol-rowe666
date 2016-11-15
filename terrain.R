@@ -138,11 +138,11 @@ lakes <- TRUE
 deviation <- 50
 x <- 3
 initdeviation <- 100
-print(matrix.points)
 stdev <- stdev(deviation, x+1)
 worldly <- world.size(x)
 size <- worldly$size
 matrix.points <- c(1, size)
+print(matrix.points)
 my.world <- worldly$my.world
 
 ### Add values to the four corners of the intitial box  
@@ -173,3 +173,9 @@ print(my.world)
 print(stdev)
 my.world <- waterlogged(lakes)
 print(my.world)
+about.time <- apply(my.world, 1,as.numeric) 
+image(about.time)
+
+
+hotn <- pheatmap(my.world, cluster_row = FALSE, cluster_col = FALSE, color=gray.colors(2,start=1,end=0))
+hotn
