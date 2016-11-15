@@ -72,7 +72,10 @@ survive <- function(cell, info){
   }
   # this makes it easier for me
   survive <- info$survive
+  names <- info$names
+  num <- length(names)
   # I am going to assume that this survive function will be called within a loop, such that i will be defined.
+  x <- sample(1:num, 1, replace = TRUE)
   if(runif(1) <= survive[[x]]){ #just probability form the info$survive at location i
     plant <- names(survive[x])
     cell <- plant
@@ -85,32 +88,11 @@ return(cell)
 
 ## Passing some dummy values to test the survive function as best I can; looks like it's working 
 # x <- 1
-# cell <- 0.2
-# survive(cell, info)
+#cell <- 0.2
+#survive(cell, info)
 
-
-##Will's skeleton of plant.timestep used terrain is his input matrix. My terrain is: my.world
-## But where do we define x, which is the plant species that we are looking at???
-## We call the survive function here, but no where do we define for which darned species!!
-
-# removing:for(i in 1:nrow(my.world)){ and for(j in 1:ncol(my.world)){
-#######  PLANT.TIMESTEP FUNCTION ############
-plant.timestep <- function(my.world, info){
-  new.plants.matrix <- matrix(data = NA, nrow= nrow(my.world), ncol=ncol(my.world))
-  # Now we go through every cell in my.world to deterimine if we can put a plant in that cell location
-  # of our new matrix: new.plants.matrix. Where size <- nrow(my.world)
-  cell.locs <- as.matrix(expand.grid(1:size, 1:size))
-  for(i in 1:nrow(cell.locs)){
-    r <- cell.locs[i,1]
-    c <- cell.locs[i,2]
-    newplant <- survive(my.world[r,c], info)
-    new.plants.matrix[r,c] <- newplant
-    }
-  return(new.plants.matrix)
-}
-
-##### END OF PLANT.TIMESTEP FUNCTION ###########
-
+####### NOTE: moved plant.timestep to end of this file. It appears that all is going into this function####
+##########################################################################################################
 
 # ## creating a dummy matrix for my.world
 # ## woould be nice to test to see if plant.timestep function works
@@ -211,26 +193,35 @@ reproduce <- function(row, col, plants, info){
     r <- possible.locations[i,1]
     c <- possible.locations[i,2]
     # make sure within matrix
-    if(r > 0 < size & c > 0 < size ){
+    if(r > 0 <= size & c > 0 <= size ){
       if(my.matrix[r,c] == ''){
         repro <- info$repro 
-        if(runif(1) <= repro[[x]]){ #just probability form the info$repro at location i
-          plant <- names(survive[x])
+        if(runif(1) <= repro[[x]]){   #just probability form the info$repro at location i
+          plant <- names(repro[x])
           plants[r,c] <- plant
         }else{
           plants[r,c] <- ""
         }
-        return()
-      } 
       }
     }
-    #...now filter out which ones are not water-logged and reproduce there...
-    #...being careful to check you do have somewhere to reproduce to!...
-    sample(species_names, 1, prob=comp.mat[row,column]) 
   }
+  return()
+} 
+
+      #...now filter out which ones are not water-logged and reproduce there...
+    #...being careful to check you do have somewhere to reproduce to!...
+fight <- function(something){
   
-  return(plants)
+  whatisthis <- sample(names, 1, prob=comp.mat[row,column])
+  
 }
+
+
+#     
+#  }
+  
+#  return(plants)
+#}
 
 
 #####  let's see how Will is reproducing....you know what I mean ########
@@ -240,3 +231,28 @@ col <- 2
 possible.locations <- as.matrix(expand.grid(row+c(-1,0,1), col+c(-1,0,1)))
 possible.locations
 #########  OK, I get it. Now, I figure how you probably created your terrain matrix. #######
+
+##Will's skeleton of plant.timestep used terrain is his input matrix. My terrain is: my.world
+## But where do we define x, which is the plant species that we are looking at???
+## We call the survive function here, but no where do we define for which darned species!!
+
+# removing:for(i in 1:nrow(my.world)){ and for(j in 1:ncol(my.world)){
+#######  PLANT.TIMESTEP FUNCTION ############
+plant.timestep <- function(my.world, info){
+  new.plants.matrix <- matrix(data = NA, nrow= nrow(my.world), ncol=ncol(my.world))
+  # Now we go through every cell in my.world to deterimine if we can put a plant in that cell location
+  # of our new matrix: new.plants.matrix. Where size <- nrow(my.world)
+  cell.locs <- as.matrix(expand.grid(1:size, 1:size))
+  for(i in 1:nrow(cell.locs)){
+    r <- cell.locs[i,1]
+    c <- cell.locs[i,2]
+    newplant <- survive(my.world[r,c], info)
+    new.plants.matrix[r,c] <- newplant
+  }
+  return(new.plants.matrix)
+}
+
+##### END OF PLANT.TIMESTEP FUNCTION ###########
+
+
+
