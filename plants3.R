@@ -199,31 +199,16 @@ reproduce <- function(plants, size, info, comp.mat, names, before, step){
     if(length(potparents == 1)){
       newplant <- roulette(repro, potparents[1])
       plants[r,c,step] <- newplant
-      offspring <- c()
+      #offspring <- newplant
     # given several potential parents, see who successfully reproduces and add to vector of offspring  
-    }else if(length(potparents >= 2)){
-      offspring <- c()
-      for(i in 1:length(potparents)){
-        newplant <- roulette(repro, potparents[i])
-        if(newplant != ""){
-          offspring <-c(offspring, newplant)
-        }
-      }
-    }else{
-      ## offspring = 0
-      plants[r,c,step] <- ""
-      offspring <- c()
-    }
-#### 3rd part ###
-    cat("offspring are:", offspring, "\n")
-    if(length(offspring >= 2)){
-      newplant <- competition(offspring, comp.mat, names)
+    }else if(length(potparents == 2)){
+      newplant <- competition(potparents, comp.mat, names)
+      plants[r,c,step] <- newplant
+    }else if (length(potparents) > 2){
+      ## potparents > 2
+      newplant <- competition(potparents, comp.mat, names)
       cat("Here's your BULLY:", newplant, "\n")
       plants[r,c,step] <- newplant
-    }else if(length(offspring == 1)){
-      plants[r,c,step] <- offspring[1]
-    }else{
-      plants[r,c,step] <- ""
     }
   }
   return(plants)
@@ -236,44 +221,43 @@ reproduce <- function(plants, size, info, comp.mat, names, before, step){
 
 # comp.mat read as: probability of column beating the given row
 
-competition <- function(offspring, comp.mat, names){
+competition <- function(potparents, comp.mat, names){
   #require(mgcv) # this is so I can simply use uniquecombs to get unique rows in a matrix
   # get all posible combinations within offspring list
-  if(length(offspring ==2)){
-    rvect1 <- c(offspring[1], offspring[2])
-    rvect2 <- c(offspring[2], offspring[1])
-    alluniqoffspring <- rbind(rvect1, rvect2)
-  }else{
-    offspring.mat <- combn(offspring, 2)
+  if(length(potparents == 2)){
+    alluniquoffspring <- matrix(c(potparents[1], potparents[2],potparents[1], potparents[2]), nrow = 2, ncol = 2)
+  }else if (length(potparents) > 2){
+    offspring.mat <- combn(potparents, 2)
     # now just get unique combinations
     uniq.offspring <- uniquecombs(offspring.mat)
     # now get the reverse order of these
     revoffspring <- apply(uniq.offspring, 2, rev)
     # combine and get unique again for final matrix of combos to go through in comp matrix
-    alluniqoffspring <- uniquecombs(rbind(uniq.offspring, revoffspring))
+    alluniquoffspring <- uniquecombs(rbind(uniq.offspring, revoffspring))
   }
   # get probabilities from comp.matrix for all possible combinations
   compprob <- numeric(0)
-  for(i in 1:length(alluniqoffspring)){
-    r <- alluniqoffspring[i,1]
-    c <- alluniqoffspring[i,2]
+  for(i in 1:length(alluniquoffspring)){
+    r <- alluniquoffspring[i,1]
+    cat("r is:", r, "\n")
+    rr <- which(names==r)
+    cat("rr is:", rr, "\n")
+    c <- alluniquoffspring[i,2]
+    cc <- which(names==c)
+    cat("cc is:", cc, "\n")
     # add to vector then do cbind
-    prob <- comp.mat[r,c]
-    compprob <- append(prob)
+    prob <- comp.mat[rr,cc]
+    compprob <- c(compprob, prob)
+    cat(compprob, "\n")
   }
-  bully.matrix <- cbind(alluniqchilds, compprob)
-  # find index of row with biggest prob. (don't forget that there can be multiple max - have same prob.)
-  # probabilities are in column 3 of each row
-  # biggestbully is the INDEX (or indeces) of the row(s) of bully.matrix with greatest probability
-  biggestbully <- which(bully.matrix[,3] == max(bully.matrix[,3]))
+  biggestbully <- which(compprob == max(compprob))
+  print(biggestbully)
   if(length(biggestbully == 1)){
-    bullynameindex <- biggestbully[1,2] # INDEX of the NAME that we want is in column 2
-    newplant <- names[[bullynameindex]]
+    newplant <- names[biggestbully]
   }
-  if(length(bigbully > 1)){
-    loto <- sample(bigbully, 1)
-    bullynameindex <- biggestbully[loto,2]
-    newplant <- names[[bullynameindex]]
+  if(length(biggestbully > 1)){
+    loto <- sample(biggestbully, 1)
+    newplant <- names[lotto]
   }
   return(newplant)
 }
@@ -346,4 +330,3 @@ for(step in 2:(timesteps+1)){
 #     #  return(newplant)
 # #  return(newplants.matrix) 
 ######### END FUNCTION REMINDERS #############################
-
